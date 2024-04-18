@@ -1,15 +1,6 @@
-//
-// Created by Wagner on 29/03/2024.
-//
-
+// Creator:
 #include "structure.h"
-
-
-
 #define REALOC_SIZE 256
-
-
-
 
 COLUMN *create_column(char* title) {
     COLUMN *new_column = malloc(sizeof(COLUMN));
@@ -53,6 +44,4 @@ void print_col(COLUMN* col){
     for(int i=0;i<col->TL;i++){
         printf("[%d] %d\n",i,col->data[i]);
     }
-}//
-// Created by Wagner on 29/03/2024.
-//
+}

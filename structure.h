@@ -1,6 +1,3 @@
-//
-// Created by Wagner on 29/03/2024.
-//
 
 #ifndef PROJET_C_STRUCTURE_H
 #define PROJET_C_STRUCTURE_H

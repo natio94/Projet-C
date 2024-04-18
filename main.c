@@ -1,6 +1,4 @@
-//
-// Created by Wagner on 29/03/2024.
-//
+
 #include "structure.h"
 
 
