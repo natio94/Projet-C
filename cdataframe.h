@@ -1,24 +1,18 @@
-// Creator: Natio & Wek
-#ifndef PROJET_C_STRUCTURE_H
-#define PROJET_C_STRUCTURE_H
+//
+// Created by nat.io on 19/04/2024.
+//
+
+#ifndef PROJET_C_CDATAFRAME_H
+#define PROJET_C_CDATAFRAME_H
 #include <stdio.h>
 #include <stdlib.h>
-typedef struct  {
-    char* title;
-    int* data;
-    int TP;
-    int TL;
-}COLUMN;
+#include "column.h"
 typedef struct {
     COLUMN **columns;
     int numb_columns;
 }CDataframe;
-COLUMN *create_column(char* title);
-int insert_values(COLUMN* col, int value);
-void delete_column(COLUMN* col);
-void print_col(COLUMN* col);
-// Alimentation
 CDataframe* create_dataframe();
+// Remplissage
 void fill_dataframe(CDataframe* df);
 void fill_dataframe_hardcoded(CDataframe* df);
 // Affichage
@@ -37,9 +31,7 @@ int get_value_from_dataframe(CDataframe* df, int row, int col);
 void set_value_in_dataframe(CDataframe* df, int row, int col, int new_value);
 int get_number_rows(CDataframe* df);
 int get_number_columns(CDataframe* df);
-
 int count_cells_equal(CDataframe* df, int x);
 int count_cells_greater(CDataframe* df, int x);
 int count_cells_less(CDataframe* df, int x);
-
-#endif //PROJET_C_STRUCTURE_H
+#endif //PROJET_C_CDATAFRAME_H

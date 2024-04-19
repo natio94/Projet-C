@@ -1,6 +1,6 @@
 // Creator: Natio & Wek
-#include "structure.h"
-
+#include "column.h"
+#include "cdataframe.h"
 
 int main(){
     //printf("test");

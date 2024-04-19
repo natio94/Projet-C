@@ -1,49 +1,4 @@
-// Creator: Natio & Wek
-#include "structure.h"
-#define REALOC_SIZE 256
-
-COLUMN *create_column(char* title) {
-    COLUMN *new_column = malloc(sizeof(COLUMN));
-    new_column->title = title;
-    new_column->data = NULL;
-    new_column->TL=0;
-    new_column->TP=0;
-    return new_column;
-}
-
-int insert_values(COLUMN* col, int value){
-    if (col->data==NULL){
-        col->data= malloc(REALOC_SIZE*sizeof(int));
-        col->TP=REALOC_SIZE;
-        if (col->data==NULL){
-            return 0;
-        }
-    }
-    else if (col->TL+1>col->TP){
-        realloc(col->data,col->TP+REALOC_SIZE*sizeof(int));
-        col->TP+=REALOC_SIZE;
-    }
-    col->data[col->TL]=value;
-    col->TL++;
-    return 1;
-}
-void delete_column(COLUMN* col){
-    free(col->data);
-    col->data = NULL;
-    col->TL=0;
-    col->TP=0;
-}
-void print_col(COLUMN* col){
-    if (col->data==NULL){
-        printf("Column is empty\n");
-        return;
-    }
-    for(int i=0;i<col->TL;i++){
-        printf("[%d] %d\n",i,col->data[i]);
-    }
-}
-
-
+#include "cdataframe.h"
 CDataframe* create_dataframe(){
     CDataframe* new_dataframe = malloc(sizeof(CDataframe));
     new_dataframe->columns = NULL;
@@ -146,10 +101,8 @@ void rename_column_dataframe(CDataframe* df, int column_index, char* new_title) 
 }
 int value_exists_in_dataframe(CDataframe* df, int value) {
     for(int i = 0; i < df->numb_columns; i++) {
-        for(int j = 0; j < df->columns[i]->TL; j++) {
-            if(df->columns[i]->data[j] == value) {
-                return 1;
-            }
+        if (valInCol(df->columns[i], value) != -1) {
+            return 1;
         }
     }
     return 0;
@@ -181,24 +134,15 @@ int get_number_columns(CDataframe* df) {
 int count_cells_equal(CDataframe* df, int x) {
     int count = 0;
     for(int i = 0; i < df->numb_columns; i++) {
-        for(int j = 0; j < df->columns[i]->TL; j++) {
-            if(df->columns[i]->data[j] == x) {
-                count++;
-            }
-        }
+        count += nbEqualVal(df->columns[i], x);
     }
     return count;
 }
 
-
 int count_cells_greater(CDataframe* df, int x) {
     int count = 0;
     for(int i = 0; i < df->numb_columns; i++) {
-        for(int j = 0; j < df->columns[i]->TL; j++) {
-            if(df->columns[i]->data[j] > x) {
-                count++;
-            }
-        }
+        count+=nbSupVal(df->columns[i], x);
     }
     return count;
 }
@@ -206,11 +150,7 @@ int count_cells_greater(CDataframe* df, int x) {
 int count_cells_less(CDataframe* df, int x) {
     int count = 0;
     for(int i = 0; i < df->numb_columns; i++) {
-        for(int j = 0; j < df->columns[i]->TL; j++) {
-            if(df->columns[i]->data[j] < x) {
-                count++;
-            }
-        }
+        count+=nbInfVal(df->columns[i], x);
     }
     return count;
 }

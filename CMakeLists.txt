@@ -7,4 +7,6 @@ include_directories(.)
 
 add_executable(Projet_C
         main.c
-        structure.c)
+        column.c
+        cdataframe.h
+        cdataframe.c)
