@@ -3,7 +3,6 @@
 #include "cdataframe.h"
 
 int main(){
-    //printf("test");
     COLUMN test=*create_column("test");
     printf("%d\n",insert_values(&test,5));
     printf("%d\n",insert_values(&test,8));
