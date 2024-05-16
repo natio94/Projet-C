@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <signal.h>
-
+///l
 typedef enum
 {
     NULLVAL = 1 , UINT, INT, CHAR, FLOAT, DOUBLE, STRING, STRUCTURE

@@ -1,7 +1,7 @@
 // Creator: Natio & Wek
 #include "column.h"
 #define REALOC_SIZE 256
-
+//l
 COLUMN *create_column(ENUM_TYPE type, char* title) {
     COLUMN *new_column = malloc(sizeof(COLUMN));
     new_column->title = title;

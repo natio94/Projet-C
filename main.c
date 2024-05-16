@@ -8,7 +8,7 @@ void handleSegFaultError(int sig) {
     exit(1);
 }
 int main(){
-
+//j
     signal(SIGSEGV, handleSegFaultError);
     COLUMN test=*create_column(STRING,"test");
     printf("%d\n",insert_values(&test,(void*)"es"));
