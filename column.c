@@ -2,45 +2,170 @@
 #include "column.h"
 #define REALOC_SIZE 256
 
-COLUMN *create_column(char* title) {
+COLUMN *create_column(ENUM_TYPE type, char* title) {
     COLUMN *new_column = malloc(sizeof(COLUMN));
     new_column->title = title;
     new_column->data = NULL;
     new_column->TL=0;
     new_column->TP=0;
+    new_column->column_type = type;
+    new_column->index = NULL;
     return new_column;
 }
 
-int insert_values(COLUMN* col, int value){
-    if (col->data==NULL){
-        col->data= malloc(REALOC_SIZE*sizeof(int));
-        col->TP=REALOC_SIZE;
+int insert_values(COLUMN* col, void* value){
+    if (value==NULL){
         if (col->data==NULL){
-            return 0;
+            col->data= malloc(REALOC_SIZE*sizeof(NULL));
+            col->TP=REALOC_SIZE;
+        }
+        else if (col->TL+1>col->TP){
+            realloc(col->data,col->TP+REALOC_SIZE*sizeof(unsigned int));
+            col->TP+=REALOC_SIZE;
         }
     }
-    else if (col->TL+1>col->TP){
-        realloc(col->data,col->TP+REALOC_SIZE*sizeof(int));
-        col->TP+=REALOC_SIZE;
+    else {
+        switch (col->column_type) {
+            case UINT:
+                if (col->data == NULL) {
+                    col->data = malloc(REALOC_SIZE * sizeof(unsigned int));
+                    col->TP = REALOC_SIZE;
+                } else if (col->TL + 1 > col->TP) {
+                    realloc(col->data, col->TP + REALOC_SIZE * sizeof(unsigned int));
+                    col->TP += REALOC_SIZE;
+                }
+                break;
+            case INT:
+                if (col->data == NULL) {
+                    col->data = malloc(REALOC_SIZE * sizeof(int));
+                    col->TP = REALOC_SIZE;
+                } else if (col->TL + 1 > col->TP) {
+                    realloc(col->data, col->TP + REALOC_SIZE * sizeof(int));
+                    col->TP += REALOC_SIZE;
+                }
+                col->data[col->TL] = (int *) malloc(sizeof(int));
+                *((int *) col->data[col->TL]) = *((int *) value);
+                break;
+            case CHAR:
+                if (col->data == NULL) {
+                    col->data = malloc(REALOC_SIZE * sizeof(char));
+                    col->TP = REALOC_SIZE;
+                } else if (col->TL + 1 > col->TP) {
+                    realloc(col->data, col->TP + REALOC_SIZE * sizeof(char));
+                    col->TP += REALOC_SIZE;
+                }
+                break;
+            case FLOAT:
+                if (col->data == NULL) {
+                    col->data = malloc(REALOC_SIZE * sizeof(float));
+                    col->TP = REALOC_SIZE;
+                } else if (col->TL + 1 > col->TP) {
+                    realloc(col->data, col->TP + REALOC_SIZE * sizeof(float));
+                    col->TP += REALOC_SIZE;
+                }
+                break;
+            case DOUBLE:
+                if (col->data == NULL) {
+                    col->data = malloc(REALOC_SIZE * sizeof(double));
+                    col->TP = REALOC_SIZE;
+                } else if (col->TL + 1 > col->TP) {
+                    realloc(col->data, col->TP + REALOC_SIZE * sizeof(double));
+                    col->TP += REALOC_SIZE;
+                }
+                break;
+            case STRING:
+                if (col->data == NULL) {
+                    col->data = malloc(REALOC_SIZE * sizeof(char *));
+                    col->TP = REALOC_SIZE;
+                } else if (col->TL + 1 > col->TP) {
+                    col->data = realloc(col->data, col->TP + REALOC_SIZE * sizeof(char *));
+                    col->TP += REALOC_SIZE;
+                }
+                break;
+            case STRUCTURE:
+                return 0;
+                break;
+            case NULLVAL:
+                break;
+        }
     }
     col->data[col->TL]=value;
     col->TL++;
+    if (col->data==NULL){
+        return 0;
+    }
     return 1;
 }
+
 void delete_column(COLUMN* col){
+    printf("Suppresison de la colonne %s\n",col->title);
+    printf("Taille : %d\n",col->TL);
+    for(int i=0;i<col->TL;i++){
+        printf("\n%d",i);
+        if (col->data[i]!=NULL){
+            free(col->data[i]);
+        }
+
+    }
     free(col->data);
     col->data = NULL;
     col->TL=0;
     col->TP=0;
 }
-void print_col(COLUMN* col){
-    if (col->data==NULL){
-        printf("Column is empty\n");
+void convertCol(COLUMN* col, unsigned long long int i, char *str,unsigned int size){
+
+    if (col->data[i]==NULL){
+
+        sprintf(str,"NULL");
         return;
     }
-    for(int i=0;i<col->TL;i++){
-        printf("[%d] %d\n",i,col->data[i]);
+    else{
+
+    switch (col->column_type) {
+        case NULLVAL:
+            sprintf(str,"NULL");
+            break;
+        case UINT:
+            sprintf(str,"%d",*((unsigned int*)col->data[i]));
+            break;
+        case INT:
+            sprintf(str,"%d",*((int*)col->data[i]));
+            break;
+        case CHAR:
+            *(str)=*((char*)col->data[i]);
+            break;
+        case FLOAT:
+            sprintf(str,"%f",*((float*)col->data[i]));
+            break;
+        case DOUBLE:
+            sprintf(str,"%lf",*((double*)col->data[i]));
+            break;
+        case STRING:
+            sprintf(str,"%s",((char*)col->data[i]));
+            break;
+        case STRUCTURE:
+            break;
+
     }
+    if(*(str)=='\0'){
+        sprintf(str,"NULL");
+    }
+    }
+}
+void print_col(COLUMN* col){
+    if (col->data==NULL){
+        printf("La colonne est vide\n");
+        return;
+    }
+    printf("Column %s\n",col->title);
+    for(int i=0;i<col->TL-1;i++){
+        char str[10];
+        convertCol(col,i,str,col->TL);
+        printf("[%d] : %s,",i, str);
+    }
+    char str[10];
+    convertCol(col,col->TL-1,str,col->TL);
+    printf("[%d] : %s\n",col->TL-1,str );
 }
 
 int nbVal(COLUMN *col, int x) {
@@ -55,7 +180,7 @@ int nbVal(COLUMN *col, int x) {
 
 int valPosX(COLUMN *col, int x) {
     if (x<col->TL){
-        return col->data[x];
+        return (long unsigned int) col->data[x];
     }
     return -1;
 }

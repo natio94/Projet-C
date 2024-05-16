@@ -1,17 +1,25 @@
 // Creator: Natio & Wek
-#include "column.h"
-#include "cdataframe.h"
 
+#include "column.h"
+//#include "cdataframe.h"
+void handleSegFaultError(int sig) {
+    printf("Une erreur de type Segmentation Fault a ete detectee probablement cree par une erreur de type lors de l'insertion des valeurs"
+           ", le programme va s'arreter.\nVeuillez corriger l'erreur et relancer le programme.\n");
+    exit(1);
+}
 int main(){
-    //printf("test");
-    COLUMN test=*create_column("test");
-    printf("%d\n",insert_values(&test,5));
-    printf("%d\n",insert_values(&test,8));
+
+    signal(SIGSEGV, handleSegFaultError);
+    COLUMN test=*create_column(STRING,"test");
+    printf("%d\n",insert_values(&test,(void*)"es"));
+    printf("%d\n",insert_values(&test, (void *) "efz"));
+    printf("%d\n",insert_values(&test, (void *) "10"));
+    insert_values(&test, (void *) "20");
     print_col(&test);
+    printf("Taille de la colonne : %d\n",test.TL);
     delete_column(&test);
     print_col(&test);
-
-
+    /*
         // Create a dataframe
         CDataframe* df = create_dataframe();
 
@@ -53,7 +61,7 @@ int main(){
         printf("Number of columns after deletion: %d\n", get_number_columns(df));
 
         printf("All operations completed!\n");
-
+*/
         return 0;
     }
 
