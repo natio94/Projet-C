@@ -9,4 +9,6 @@ add_executable(Projet_C
         main.c
         column.c
         column.h
-        )
+        cdataframe.c
+        cdataframe.h
+)

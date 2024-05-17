@@ -31,7 +31,7 @@ int insert_values(COLUMN* col, void* value){
                     col->data = malloc(REALOC_SIZE * sizeof(unsigned int));
                     col->TP = REALOC_SIZE;
                 } else if (col->TL + 1 > col->TP) {
-                    realloc(col->data, col->TP + REALOC_SIZE * sizeof(unsigned int));
+                    col->data = realloc(col->data, col->TP + REALOC_SIZE * sizeof(unsigned int));
                     col->TP += REALOC_SIZE;
                 }
                 break;
