@@ -1,7 +1,0 @@
-# ninja log v5
-1	77	7375779245421059	CMakeFiles/Projet_C.dir/column.c.obj	a2e70b85c44a012b
-2	149	7375726513529757	CMakeFiles/Projet_C.dir/main.c.obj	731c7f8454c8259f
-2	77	7351578800688730	CMakeFiles/Projet_C.dir/structure.c.obj	85cf06d0b5883cc4
-6	85	7375779245506601	CMakeFiles/Projet_C.dir/cdataframe.c.obj	50b138db872b0920
-85	229	7375779246903171	Projet_C.exe	a43f93867c04ab13
-0	72	7375783107396374	build.ninja	5fbf87a3775d777
