@@ -64,6 +64,10 @@ void fill_dataframe_hardcoded(CDataframe* df) {
     insert_values(df->columns[1], 40);
 } */
 void print_dataframe(CDataframe* df) {
+    if(df->numb_columns == 0) {
+        printf("Empty dataframe\n");
+        return;
+    }
     for(int i = 0; i < df->numb_columns; i++) {
         printf("Column %d: ", i+1);
         print_col(df->columns[i]);
@@ -78,10 +82,8 @@ void print_dataframe_ligne(CDataframe* df, int ligne) {
     }
 }
 void print_dataframe_column(CDataframe* df, int column) {
-    for(int i = 0; i < column && i < df->numb_columns; i++) {
-        printf("Column %d: ", i+1);
-        print_col(df->columns[i]);
-    }
+        print_col(df->columns[column]);
+
 }
 void add_row_dataframe(CDataframe* df, int* row_values) {
     for(int i = 0; i < df->numb_columns; i++) {
@@ -117,7 +119,7 @@ void rename_column_dataframe(CDataframe* df, int column_index, char* new_title) 
         df->columns[column_index]->title = new_title;
     }
 }
-int value_exists_in_dataframe(CDataframe* df, int value) {
+int value_exists_in_dataframe(CDataframe* df, void* value) {
     for(int i = 0; i < df->numb_columns; i++) {
         if (valInCol(df->columns[i], value) != -1) {
             return 1;
@@ -125,11 +127,11 @@ int value_exists_in_dataframe(CDataframe* df, int value) {
     }
     return 0;
 }
-int get_value_from_dataframe(CDataframe* df, int row, int col) {
+void* get_value_from_dataframe(CDataframe* df, int row, int col) {
     if(col < df->numb_columns && row < df->columns[col]->TL) {
-        return (int) df->columns[col]->data[row];
+        return (void*) df->columns[col]->data[row];
     }
-    return -10;
+    return (void*)-1;
 }
 
 void set_value_in_dataframe(CDataframe* df, int row, int col, void* new_value) {
@@ -141,7 +143,15 @@ void set_value_in_dataframe(CDataframe* df, int row, int col, void* new_value) {
                 df->columns[col]->data[row]->uint_value = *((unsigned int*)new_value);
                 break;
             case INT:
-                df->columns[col]->data[row]->int_value = *((int*)new_value);
+                print_col(df->columns[col]);
+                char str[10];
+                convertCol(df->columns[col],row,str,df->columns[col]->TL);
+                printf("%s",str );
+                df->columns[col]->data[row] = new_value;
+                char str1[10];
+                sprintf(str1,"%d",*((int*)new_value));
+                printf("%s",str1 );
+
                 break;
             case CHAR:
                 df->columns[col]->data[row]->char_value = *((char*)new_value);
@@ -154,6 +164,7 @@ void set_value_in_dataframe(CDataframe* df, int row, int col, void* new_value) {
                 break;
             case STRING:
                 df->columns[col]->data[row]->string_value = (char*)new_value;
+
                 break;
             case STRUCTURE:
                 df->columns[col]->data[row]->struct_value = new_value;
@@ -176,42 +187,7 @@ int get_number_columns(CDataframe* df) {
 int count_cells_equal(CDataframe* df, void* x) {
     int count = 0;
     for(int i = 0; i < df->numb_columns; i++) {
-        switch(df->columns[i]->column_type) {
-            case NULLVAL:
-                break;
-            case UINT:
-                if (*((unsigned int*)df->columns[i]->data) == *((unsigned int*)x)) {
-                    count++;
-                }
-                break;
-            case INT:
-                if (*((int*)df->columns[i]->data) == *((int*)x)) {
-                    count++;
-                }
-                break;
-            case CHAR:
-                if (*((char*)df->columns[i]->data) == *((char*)x)) {
-                    count++;
-                }
-                break;
-            case FLOAT:
-                if (*((float*)df->columns[i]->data) == *((float*)x)) {
-                    count++;
-                }
-                break;
-            case DOUBLE:
-                if (*((double*)df->columns[i]->data) == *((double*)x)) {
-                    count++;
-                }
-                break;
-            case STRING:
-                if (strcmp((char*)df->columns[i]->data, (char*)x) == 0) {
-                    count++;
-                }
-                break;
-            case STRUCTURE:
-                break;
-        }
+       count+=nbVal(df->columns[i],x);
     }
     return count;
 }
@@ -219,44 +195,7 @@ int count_cells_equal(CDataframe* df, void* x) {
 int count_cells_greater(CDataframe* df, void* x) {
     int count = 0;
     for(int i = 0; i < df->numb_columns; i++) {
-        switch(df->columns[i]->column_type) {
-            case NULLVAL:
-                // Handle NULLVAL case
-                break;
-            case UINT:
-                if (*((unsigned int*)df->columns[i]->data) > *((unsigned int*)x)) {
-                    count++;
-                }
-                break;
-            case INT:
-                if (*((int*)df->columns[i]->data) > *((int*)x)) {
-                    count++;
-                }
-                break;
-            case CHAR:
-                if (*((char*)df->columns[i]->data) > *((char*)x)) {
-                    count++;
-                }
-                break;
-            case FLOAT:
-                if (*((float*)df->columns[i]->data) > *((float*)x)) {
-                    count++;
-                }
-                break;
-            case DOUBLE:
-                if (*((double*)df->columns[i]->data) > *((double*)x)) {
-                    count++;
-                }
-                break;
-            case STRING:
-                if (strcmp((char*)df->columns[i]->data, (char*)x) > 0) {
-                    count++;
-                }
-                break;
-            case STRUCTURE:
-                // Handle STRUCTURE case
-                break;
-        }
+        count+=nbSupVal(df->columns[i],x);
     }
     return count;
 }
@@ -264,44 +203,7 @@ int count_cells_greater(CDataframe* df, void* x) {
 int count_cells_less(CDataframe* df, void* x) {
     int count = 0;
     for(int i = 0; i < df->numb_columns; i++) {
-        switch(df->columns[i]->column_type) {
-            case NULLVAL:
-                // Handle NULLVAL case
-                break;
-            case UINT:
-                if (*((unsigned int*)df->columns[i]->data) < *((unsigned int*)x)) {
-                    count++;
-                }
-                break;
-            case INT:
-                if (*((int*)df->columns[i]->data) < *((int*)x)) {
-                    count++;
-                }
-                break;
-            case CHAR:
-                if (*((char*)df->columns[i]->data) < *((char*)x)) {
-                    count++;
-                }
-                break;
-            case FLOAT:
-                if (*((float*)df->columns[i]->data) < *((float*)x)) {
-                    count++;
-                }
-                break;
-            case DOUBLE:
-                if (*((double*)df->columns[i]->data) < *((double*)x)) {
-                    count++;
-                }
-                break;
-            case STRING:
-                if (strcmp((char*)df->columns[i]->data, (char*)x) < 0) {
-                    count++;
-                }
-                break;
-            case STRUCTURE:
-                // Handle STRUCTURE case
-                break;
-        }
+        count+=nbInfVal(df->columns[i],x);
     }
     return count;
 }

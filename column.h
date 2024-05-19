@@ -33,12 +33,13 @@ COLUMN *create_column(ENUM_TYPE type, char* title);
 int insert_values(COLUMN* col, void* value);
 void delete_column(COLUMN* col);
 void print_col(COLUMN* col);
-int nbVal(COLUMN* col, int x);
-int valInCol(COLUMN *col, int x);
-int valPosX(COLUMN *col, int x);
-int nbSupVal(COLUMN *col, int x);
+int nbVal(COLUMN* col, void* x);
+void convertCol(COLUMN* col, unsigned long long int i, char *str,unsigned int size);
+int valInCol(COLUMN *col, void* x);
+void* valPosX(COLUMN *col, int x);
+int nbSupVal(COLUMN *col, void* x);
 
-int nbInfVal(COLUMN *col, int x);
+int nbInfVal(COLUMN *col, void* x);
 
 int nbEqualVal(COLUMN *col, int x);
 #endif //PROJET_C_COLUMN_H

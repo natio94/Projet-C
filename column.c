@@ -1,4 +1,5 @@
 // Creator: Natio & Wek
+#include <string.h>
 #include "column.h"
 #define REALOC_SIZE 256
 //l
@@ -20,7 +21,10 @@ int insert_values(COLUMN* col, void* value){
             col->TP=REALOC_SIZE;
         }
         else if (col->TL+1>col->TP){
-            realloc(col->data,col->TP+REALOC_SIZE*sizeof(unsigned int));
+            col->data = realloc(col->data,col->TP+REALOC_SIZE*sizeof(unsigned int));
+            if (col->data==NULL){
+                return 0;
+            }
             col->TP+=REALOC_SIZE;
         }
     }
@@ -32,6 +36,9 @@ int insert_values(COLUMN* col, void* value){
                     col->TP = REALOC_SIZE;
                 } else if (col->TL + 1 > col->TP) {
                     col->data = realloc(col->data, col->TP + REALOC_SIZE * sizeof(unsigned int));
+                    if (col->data==NULL){
+                        return 0;
+                    }
                     col->TP += REALOC_SIZE;
                 }
                 break;
@@ -40,18 +47,22 @@ int insert_values(COLUMN* col, void* value){
                     col->data = malloc(REALOC_SIZE * sizeof(int));
                     col->TP = REALOC_SIZE;
                 } else if (col->TL + 1 > col->TP) {
-                    realloc(col->data, col->TP + REALOC_SIZE * sizeof(int));
+                    col->data = realloc(col->data, col->TP + REALOC_SIZE * sizeof(int));
+                    if (col->data==NULL){
+                        return 0;
+                    }
                     col->TP += REALOC_SIZE;
                 }
-                col->data[col->TL] = (int *) malloc(sizeof(int));
-                *((int *) col->data[col->TL]) = *((int *) value);
                 break;
             case CHAR:
                 if (col->data == NULL) {
                     col->data = malloc(REALOC_SIZE * sizeof(char));
                     col->TP = REALOC_SIZE;
                 } else if (col->TL + 1 > col->TP) {
-                    realloc(col->data, col->TP + REALOC_SIZE * sizeof(char));
+                    col->data = realloc(col->data, col->TP + REALOC_SIZE * sizeof(char));
+                    if (col->data==NULL){
+                        return 0;
+                    }
                     col->TP += REALOC_SIZE;
                 }
                 break;
@@ -60,7 +71,10 @@ int insert_values(COLUMN* col, void* value){
                     col->data = malloc(REALOC_SIZE * sizeof(float));
                     col->TP = REALOC_SIZE;
                 } else if (col->TL + 1 > col->TP) {
-                    realloc(col->data, col->TP + REALOC_SIZE * sizeof(float));
+                    col->data = realloc(col->data, col->TP + REALOC_SIZE * sizeof(float));
+                    if (col->data==NULL){
+                        return 0;
+                    }
                     col->TP += REALOC_SIZE;
                 }
                 break;
@@ -69,16 +83,22 @@ int insert_values(COLUMN* col, void* value){
                     col->data = malloc(REALOC_SIZE * sizeof(double));
                     col->TP = REALOC_SIZE;
                 } else if (col->TL + 1 > col->TP) {
-                    realloc(col->data, col->TP + REALOC_SIZE * sizeof(double));
+                    col->data = realloc(col->data, col->TP + REALOC_SIZE * sizeof(double));
+                    if (col->data==NULL){
+                        return 0;
+                    }
                     col->TP += REALOC_SIZE;
                 }
                 break;
             case STRING:
                 if (col->data == NULL) {
-                    col->data = malloc(REALOC_SIZE * sizeof(char *));
+                    col->data = malloc(REALOC_SIZE * strlen(value)*sizeof(char*)+1);
                     col->TP = REALOC_SIZE;
                 } else if (col->TL + 1 > col->TP) {
-                    col->data = realloc(col->data, col->TP + REALOC_SIZE * sizeof(char *));
+                    col->data = realloc(col->data, col->TP + REALOC_SIZE * sizeof(char*));
+                    if (col->data==NULL){
+                        return 0;
+                    }
                     col->TP += REALOC_SIZE;
                 }
                 break;
@@ -91,36 +111,26 @@ int insert_values(COLUMN* col, void* value){
     }
     col->data[col->TL]=value;
     col->TL++;
-    if (col->data==NULL){
+    if (col->data==NULL || col->data[col->TL]!=value){
         return 0;
     }
     return 1;
 }
 
 void delete_column(COLUMN* col){
-    printf("Suppresison de la colonne %s\n",col->title);
-    printf("Taille : %d\n",col->TL);
-    for(int i=0;i<col->TL;i++){
-        printf("\n%d",i);
-        if (col->data[i]!=NULL){
-            free(col->data[i]);
-        }
-
-    }
+    printf("Suppression de la colonne %s\n",col->title);
     free(col->data);
     col->data = NULL;
     col->TL=0;
     col->TP=0;
 }
 void convertCol(COLUMN* col, unsigned long long int i, char *str,unsigned int size){
-
     if (col->data[i]==NULL){
 
         sprintf(str,"NULL");
         return;
     }
     else{
-
     switch (col->column_type) {
         case NULLVAL:
             sprintf(str,"NULL");
@@ -141,7 +151,7 @@ void convertCol(COLUMN* col, unsigned long long int i, char *str,unsigned int si
             sprintf(str,"%lf",*((double*)col->data[i]));
             break;
         case STRING:
-            sprintf(str,"%s",((char*)col->data[i]));
+            sprintf(str,"%s",(char*)col->data[i]);
             break;
         case STRUCTURE:
             break;
@@ -153,7 +163,7 @@ void convertCol(COLUMN* col, unsigned long long int i, char *str,unsigned int si
     }
 }
 void print_col(COLUMN* col){
-    if (col->data==NULL){
+    if (col->data==NULL || col->TL==0){
         printf("La colonne est vide\n");
         return;
     }
@@ -168,26 +178,52 @@ void print_col(COLUMN* col){
     printf("[%d] : %s\n",col->TL-1,str );
 }
 
-int nbVal(COLUMN *col, int x) {
+int nbVal(COLUMN *col, void* x) {
     int nb=0;
     for(int i=0;i<col->TL;i++){
-        if (col->data[i]==x){
-            nb++;
-        }
-    }
+        switch (col->column_type) {
+            case UINT:
+                if (*(unsigned int*)(col->data[i]) == *(unsigned int*)x){
+                    nb++;
+                }
+                break;
+            case INT:
+                if (*(int*)(col->data[i]) == *(int*)x){
+                    nb++;
+                }
+                break;
+            case CHAR:
+                if (*(char*)(col->data[i]) == *(char*)x){
+                    nb++;
+                }
+                break;
+            case FLOAT:
+                if (*(float*)(col->data[i]) == *(float*)x){
+                    nb++;
+                }
+                break;
+            case DOUBLE:
+                if (*(double*)(col->data[i]) == *(double*)x){
+                    nb++;
+                }
+                break;
+            case STRING:
+                if (*(char**)(col->data[i])==*(char**)x){
+                    nb++;
+                }
+                break;
+    }}
     return nb;
 }
 
-int valPosX(COLUMN *col, int x) {
+void* valPosX(COLUMN *col, int x) {
     if (x<col->TL){
-        return (long unsigned int) col->data[x];
+        return (void*) col->data[x];
     }
-    return -1;
+    return (void*)-1;
 }
 
-int valInCol(COLUMN *col, int x);
-
-int valInCol(COLUMN *col, int x) {
+int valInCol(COLUMN *col, void* x) {
     for(int i=0;i<col->TL;i++){
         if (col->data[i]==x){
             return 1;
@@ -196,34 +232,85 @@ int valInCol(COLUMN *col, int x) {
     return 0;
 }
 
-int nbSupVal(COLUMN *col, int x) {
-    int nb=0;
-    for(int i=0;i<col->TL;i++){
-        if (col->data[i]>x){
-            nb++;
+int nbSupVal(COLUMN *col, void* x) {
+    int nb = 0;
+    for(int i = 0; i < col->TL; i++){
+        switch (col->column_type) {
+            case UINT:
+                if (*(unsigned int*)(col->data[i]) > *(unsigned int*)x){
+                    nb++;
+                }
+                break;
+            case INT:
+                if (*(int*)(col->data[i]) > *(int*)x){
+                    nb++;
+                }
+                break;
+            case CHAR:
+                if (*(char*)(col->data[i]) > *(char*)x){
+                    nb++;
+                }
+                break;
+            case FLOAT:
+                if (*(float*)(col->data[i]) > *(float*)x){
+                    nb++;
+                }
+                break;
+            case DOUBLE:
+                if (*(double*)(col->data[i]) > *(double*)x){
+                    nb++;
+                }
+                break;
+            case STRING:
+                if (strcmp((char*)(col->data[i]), (char*)x) > 0){
+                    nb++;
+                }
+                break;
+                // Add other cases for different column types
         }
     }
     return nb;
 }
 
-int nbInfVal(COLUMN *col, int x) {
-    int nb=0;
-    for(int i=0;i<col->TL;i++){
-        if (col->data[i]<x){
-            nb++;
+int nbInfVal(COLUMN *col, void* x) {
+    int nb = 0;
+    for(int i = 0; i < col->TL; i++){
+        switch (col->column_type) {
+            case UINT:
+                if (*(unsigned int*)(col->data[i]) < *(unsigned int*)x){
+                    nb++;
+                }
+                break;
+            case INT:
+                if (*(int*)(col->data[i]) < *(int*)x){
+                    nb++;
+                }
+                break;
+            case CHAR:
+                if (*(char*)(col->data[i]) < *(char*)x){
+                    nb++;
+                }
+                break;
+            case FLOAT:
+                if (*(float*)(col->data[i]) < *(float*)x){
+                    nb++;
+                }
+                break;
+            case DOUBLE:
+                if (*(double*)(col->data[i]) < *(double*)x){
+                    nb++;
+                }
+                break;
+            case STRING:
+                if (strcmp((char*)(col->data[i]), (char*)x) < 0){
+                    nb++;
+                }
+                break;
+                // Add other cases for different column types
         }
     }
     return nb;
 }
 
-int nbEqualVal(COLUMN *col, int x) {
-    int nb=0;
-    for(int i=0;i<col->TL;i++){
-        if (col->data[i]==x){
-            nb++;
-        }
-    }
-    return nb;
-}
 
 

@@ -27,8 +27,8 @@ void add_column_dataframe(CDataframe* df, ENUM_TYPE type, char* title);
 void delete_column_dataframe(CDataframe* df, int column_index);
 void rename_column_dataframe(CDataframe* df, int column_index, char* new_title);
 // Analyse et statistiques
-int value_exists_in_dataframe(CDataframe* df, int value);
-int get_value_from_dataframe(CDataframe* df, int row, int col);
+int value_exists_in_dataframe(CDataframe* df, void* value);
+void* get_value_from_dataframe(CDataframe* df, int row, int col);
 void set_value_in_dataframe(CDataframe* df, int row, int col, void* new_value);
 int get_number_rows(CDataframe* df);
 int get_number_columns(CDataframe* df);
