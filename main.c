@@ -107,16 +107,26 @@ int main(){
     int values2 = 15;
     printf("New value at (0,0): %d\n", *(int *) get_value_from_dataframe(df, 0, 0));
     int row_valuess[] = {10};
+    int row_values2[] = {16};
+    int row_values3[] = {3};
     // Check if value exists
     printf("Does 10 exist in dataframe: %d\n", value_exists_in_dataframe(df, &values));
     add_row_dataframe(df, row_valuess);
+    add_row_dataframe(df, row_values2);
+    add_row_dataframe(df, row_values3);
     print_col(df->columns[0]);
     printf("%d", nbVal(df->columns[0], &values));
     // Count cells equal to, greater than, and less than a value
     printf("Number of cells equal to 10: %d\n", count_cells_equal(df, &values));
     printf("Number of cells greater than 5: %d\n", count_cells_greater(df, &values1));
     printf("Number of cells less than 15: %d\n", count_cells_less(df, &values2));
-
+    df->columns[0]->valid_index=0;
+    sort_col(df->columns[0],ASC);
+    print_col(df->columns[0]);
+    print_col_by_index(df->columns[0]);
+    for(int i=0;i<df->columns[0]->TL;i++){
+        printf("%llu\n",df->columns[0]->index[i]);
+    }
     // Delete a row
     delete_row_dataframe(df, 0);
     printf("Number of rows after deletion: %d\n", get_number_rows(df));

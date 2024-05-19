@@ -4,7 +4,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <signal.h>
-///l
+#define REALOC_SIZE 256
+#define ASC 0
+#define DESC 1
 typedef enum
 {
     NULLVAL = 1 , UINT, INT, CHAR, FLOAT, DOUBLE, STRING, STRUCTURE
@@ -27,6 +29,9 @@ typedef struct  {
     ENUM_TYPE column_type;
     COL_TYPE **data;
     unsigned long long int *index;
+    int valid_index;
+    unsigned int index_size;
+    int sort_dir;
 }COLUMN;
 /**
  * Crée une nouvelle colonne.
@@ -113,4 +118,18 @@ int nbInfVal(COLUMN *col, void* x);
  */
 int nbEqualVal(COLUMN *col, int x);
 
+/**
+* Trie une colonne dans un certain ordre
+* @param col Le pointeur de la colonne à trier
+* @param sort_dir Type de tri (ASC ou DESC)
+*/
+void sort_col(COLUMN *col,int sort_dir);
+
+void print_col_by_index(COLUMN* col);
+
+void update_index(COLUMN* col);
+
+int check_index(COLUMN* col);
+
+void erase_index(COLUMN* col);
 #endif //PROJET_C_COLUMN_H
