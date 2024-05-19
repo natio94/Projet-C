@@ -1,32 +1,36 @@
 #include "cdataframe.h"
+
+// Fonction pour créer un nouveau dataframe
 CDataframe* create_dataframe(){
     CDataframe* new_dataframe = malloc(sizeof(CDataframe));
     new_dataframe->columns = NULL;
     new_dataframe->numb_columns=0;
     return new_dataframe;
 }
+
+// Fonction pour remplir un dataframe avec les entrées de l'utilisateur
 void fill_dataframe(CDataframe* df) {
-    printf("Enter the number of columns: ");
+    printf("Entrez le nombre de colonnes: ");
     scanf("%d", &(df->numb_columns));
     df->columns = malloc(df->numb_columns * sizeof(COLUMN*));
 
     for(int i = 0; i < df->numb_columns; i++) {
-        printf("Enter the title for column %d: ", i+1);
+        printf("Entrez le titre pour la colonne %d: ", i+1);
         char* title = malloc(256 * sizeof(char));
         ENUM_TYPE type;
         scanf("%s", title);
-        printf("Enter the type for column %d: ", i+1);
+        printf("Entrez le type pour la colonne %d: ", i+1);
         scanf("%d", &type);
 
         df->columns[i] = create_column(type, title);
 
-        printf("Enter the number of values for column %d: ", i+1);
+        printf("Entrez le nombre de valeurs pour la colonne %d: ", i+1);
         int num_values;
         scanf("%d", &num_values);
         free(title);
 
         for(int j = 0; j < num_values; j++) {
-            printf("Enter value %d for column %d: ", j+1, i+1);
+            printf("Entrez la valeur %d pour la colonne %d: ", j+1, i+1);
             int value;
             scanf("%d", &value);
 
@@ -34,62 +38,42 @@ void fill_dataframe(CDataframe* df) {
         }
     }
 }
-/*
-void fill_dataframe_hardcoded(CDataframe* df) {
-    df->numb_columns = 2;
-    df->columns = malloc(df->numb_columns * sizeof(COLUMN*));
 
-    char* title1 = "Column1";
-    ENUM_TYPE type = INT;
-    df->columns[0] = create_column(type, title1);
-    insert_values(df->columns[0], 10);
-    insert_values(df->columns[0], 20);
-
-    char* title2 = "Column2";
-    ENUM_TYPE type;
-    df->columns[1] = create_column(type,title2);
-    insert_values(df->columns[1], 30);
-    insert_values(df->columns[1], 40);
-}
-    char* title1 = "Column1";
-    ENUM_TYPE type1 = INT;
-    df->columns[0] = create_column(type1, title1);
-    insert_values(df->columns[0], 10);
-    insert_values(df->columns[0], 20);
-
-    char* title2 = "Column2";
-    ENUM_TYPE type2 = INT;
-    df->columns[1] = create_column(type2, title2);
-    insert_values(df->columns[1], 30);
-    insert_values(df->columns[1], 40);
-} */
+// Fonction pour afficher un dataframe
 void print_dataframe(CDataframe* df) {
     if(df->numb_columns == 0) {
-        printf("Empty dataframe\n");
+        printf("Dataframe vide\n");
         return;
     }
     for(int i = 0; i < df->numb_columns; i++) {
-        printf("Column %d: ", i+1);
+        printf("Colonne %d: ", i+1);
         print_col(df->columns[i]);
     }
 }
+
+// Fonction pour afficher une ligne spécifique d'un dataframe
 void print_dataframe_ligne(CDataframe* df, int ligne) {
     for(int i = 0; i < df->numb_columns; i++) {
-        printf("Column %d: ", i+1);
+        printf("Colonne %d: ", i+1);
         for(int j = 0; j < ligne && j < df->columns[i]->TL; j++) {
             printf("[%d] %d\n", j, df->columns[i]->data[j]);
         }
     }
 }
-void print_dataframe_column(CDataframe* df, int column) {
-        print_col(df->columns[column]);
 
+// Fonction pour afficher une colonne spécifique d'un dataframe
+void print_dataframe_column(CDataframe* df, int column) {
+    print_col(df->columns[column]);
 }
+
+// Fonction pour ajouter une ligne à un dataframe
 void add_row_dataframe(CDataframe* df, int* row_values) {
     for(int i = 0; i < df->numb_columns; i++) {
         insert_values(df->columns[i],  &row_values[i]);
     }
 }
+
+// Fonction pour supprimer une ligne d'un dataframe
 void delete_row_dataframe(CDataframe* df, int row_index) {
     for(int i = 0; i < df->numb_columns; i++) {
         if(row_index < df->columns[i]->TL) {
@@ -100,11 +84,15 @@ void delete_row_dataframe(CDataframe* df, int row_index) {
         }
     }
 }
+
+// Fonction pour ajouter une colonne à un dataframe
 void add_column_dataframe(CDataframe* df,ENUM_TYPE type, char* title) {
     df->numb_columns++;
     df->columns = realloc(df->columns, df->numb_columns * sizeof(COLUMN*));
     df->columns[df->numb_columns-1] = create_column(type, title);
 }
+
+// Fonction pour supprimer une colonne d'un dataframe
 void delete_column_dataframe(CDataframe* df, int column_index) {
     if(column_index < df->numb_columns) {
         delete_column(df->columns[column_index]);
@@ -114,11 +102,15 @@ void delete_column_dataframe(CDataframe* df, int column_index) {
         df->numb_columns--;
     }
 }
+
+// Fonction pour renommer une colonne dans un dataframe
 void rename_column_dataframe(CDataframe* df, int column_index, char* new_title) {
     if(column_index < df->numb_columns) {
         df->columns[column_index]->title = new_title;
     }
 }
+
+// Fonction pour vérifier si une valeur existe dans un dataframe
 int value_exists_in_dataframe(CDataframe* df, void* value) {
     for(int i = 0; i < df->numb_columns; i++) {
         if (valInCol(df->columns[i], value) != -1) {
@@ -127,6 +119,8 @@ int value_exists_in_dataframe(CDataframe* df, void* value) {
     }
     return 0;
 }
+
+// Fonction pour obtenir une valeur d'un dataframe en fonction de son adresse
 void* get_value_from_dataframe(CDataframe* df, int row, int col) {
     if(col < df->numb_columns && row < df->columns[col]->TL) {
         return (void*) df->columns[col]->data[row];
@@ -134,6 +128,7 @@ void* get_value_from_dataframe(CDataframe* df, int row, int col) {
     return (void*)-1;
 }
 
+// Fonction pour définir une valeur dans un dataframe
 void set_value_in_dataframe(CDataframe* df, int row, int col, void* new_value) {
     if(col < df->numb_columns && row < df->columns[col]->TL) {
         switch(df->columns[col]->column_type) {
@@ -172,6 +167,8 @@ void set_value_in_dataframe(CDataframe* df, int row, int col, void* new_value) {
         }
     }
 }
+
+// Fonction pour obtenir le nombre de lignes dans un dataframe
 int get_number_rows(CDataframe* df) {
     int max_rows = 0;
     for(int i = 0; i < df->numb_columns; i++) {
@@ -181,17 +178,22 @@ int get_number_rows(CDataframe* df) {
     }
     return max_rows;
 }
+
+// Fonction pour obtenir le nombre de colonnes dans un dataframe
 int get_number_columns(CDataframe* df) {
     return df->numb_columns;
 }
+
+// Fonction pour compter le nombre de cellules dans un dataframe qui sont égales à une valeur
 int count_cells_equal(CDataframe* df, void* x) {
     int count = 0;
     for(int i = 0; i < df->numb_columns; i++) {
-       count+=nbVal(df->columns[i],x);
+        count+=nbVal(df->columns[i],x);
     }
     return count;
 }
 
+// Fonction pour compter le nombre de cellules dans un dataframe qui sont supérieures à une valeur
 int count_cells_greater(CDataframe* df, void* x) {
     int count = 0;
     for(int i = 0; i < df->numb_columns; i++) {
@@ -200,6 +202,7 @@ int count_cells_greater(CDataframe* df, void* x) {
     return count;
 }
 
+// Fonction pour compter le nombre de cellules dans un dataframe qui sont inférieures à une valeur
 int count_cells_less(CDataframe* df, void* x) {
     int count = 0;
     for(int i = 0; i < df->numb_columns; i++) {

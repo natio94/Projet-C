@@ -2,7 +2,7 @@
 #include <string.h>
 #include "column.h"
 #define REALOC_SIZE 256
-//l
+// Crée une nouvelle colonne
 COLUMN *create_column(ENUM_TYPE type, char* title) {
     COLUMN *new_column = malloc(sizeof(COLUMN));
     new_column->title = title;
@@ -13,7 +13,7 @@ COLUMN *create_column(ENUM_TYPE type, char* title) {
     new_column->index = NULL;
     return new_column;
 }
-
+// Insère des valeurs dans une colonne
 int insert_values(COLUMN* col, void* value){
     if (value==NULL){
         if (col->data==NULL){
@@ -116,7 +116,7 @@ int insert_values(COLUMN* col, void* value){
     }
     return 1;
 }
-
+// Supprime une colonne
 void delete_column(COLUMN* col){
     printf("Suppression de la colonne %s\n",col->title);
     free(col->data);
@@ -124,6 +124,7 @@ void delete_column(COLUMN* col){
     col->TL=0;
     col->TP=0;
 }
+// Convertit une colonne en chaîne de caractères
 void convertCol(COLUMN* col, unsigned long long int i, char *str,unsigned int size){
     if (col->data[i]==NULL){
 
@@ -162,12 +163,13 @@ void convertCol(COLUMN* col, unsigned long long int i, char *str,unsigned int si
     }
     }
 }
+// Affiche une colonne
 void print_col(COLUMN* col){
     if (col->data==NULL || col->TL==0){
         printf("La colonne est vide\n");
         return;
     }
-    printf("Column %s\n",col->title);
+    printf("Colonne %s\n",col->title);
     for(int i=0;i<col->TL-1;i++){
         char str[10];
         convertCol(col,i,str,col->TL);
@@ -177,7 +179,7 @@ void print_col(COLUMN* col){
     convertCol(col,col->TL-1,str,col->TL);
     printf("[%d] : %s\n",col->TL-1,str );
 }
-
+// Compte le nombre de fois qu'une valeur apparaît dans une colonne
 int nbVal(COLUMN *col, void* x) {
     int nb=0;
     for(int i=0;i<col->TL;i++){
@@ -215,14 +217,14 @@ int nbVal(COLUMN *col, void* x) {
     }}
     return nb;
 }
-
+// Récupère une valeur à une position donnée dans une colonne
 void* valPosX(COLUMN *col, int x) {
     if (x<col->TL){
         return (void*) col->data[x];
     }
     return (void*)-1;
 }
-
+// Vérifie si une valeur est présente dans une colonne
 int valInCol(COLUMN *col, void* x) {
     for(int i=0;i<col->TL;i++){
         if (col->data[i]==x){
@@ -231,7 +233,7 @@ int valInCol(COLUMN *col, void* x) {
     }
     return 0;
 }
-
+// Compte le nombre de valeurs supérieures à x dans une colonne
 int nbSupVal(COLUMN *col, void* x) {
     int nb = 0;
     for(int i = 0; i < col->TL; i++){
@@ -271,7 +273,7 @@ int nbSupVal(COLUMN *col, void* x) {
     }
     return nb;
 }
-
+// Compte le nombre de valeurs inférieures à x dans une colonne
 int nbInfVal(COLUMN *col, void* x) {
     int nb = 0;
     for(int i = 0; i < col->TL; i++){
