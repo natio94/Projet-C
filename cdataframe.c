@@ -1,14 +1,13 @@
 #include "cdataframe.h"
 
-// Fonction pour créer un nouveau dataframe
+
 CDataframe* create_dataframe(){
     CDataframe* new_dataframe = malloc(sizeof(CDataframe));
-    new_dataframe->columns = NULL;
+    new_dataframe->columns = malloc(100*sizeof(COLUMN*));
     new_dataframe->numb_columns=0;
     return new_dataframe;
 }
 
-// Fonction pour remplir un dataframe avec les entrées de l'utilisateur
 void fill_dataframe(CDataframe* df) {
     printf("Entrez le nombre de colonnes: ");
     scanf("%d", &(df->numb_columns));
@@ -46,7 +45,7 @@ void print_dataframe(CDataframe* df) {
         return;
     }
     for(int i = 0; i < df->numb_columns; i++) {
-        printf("Colonne %d: ", i+1);
+        printf("(%d) ",i);
         print_col(df->columns[i]);
     }
 }
@@ -67,14 +66,68 @@ void print_dataframe_column(CDataframe* df, int column) {
 }
 
 // Fonction pour ajouter une ligne à un dataframe
-void add_row_dataframe(CDataframe* df, int* row_values) {
+void add_row_dataframe(CDataframe* df) {
     if(df->numb_columns == 0) {
         printf("Impossible d'ajouter une ligne à un dataframe sans colonne\n");
         return;
     }
     for(int i = 0; i < df->numb_columns; i++) {
-        insert_values(df->columns[i],  &row_values[i]);
+        switch (df->columns[i]->column_type){
+            case UINT: {
+                unsigned int value;
+                printf("Entrez la valeur de la ligne %d pour la colonne %s (%d): ",df->columns[i]->TL,df->columns[i]->title, i);
+                scanf("%u", &value);
+                insert_values(df->columns[i], &value);
+                break;
+            }
+            case INT: {
+                int value;
+                printf("Entrez la valeur pour la colonne %s (%d): ",df->columns[i]->title, i+1);
+                scanf("%d", &value);
+                insert_values(df->columns[i], &value);
+                break;
+            }
+            case CHAR: {
+                char value;
+                printf("Entrez la valeur pour la colonne %s (%d): ",df->columns[i]->title, i+1);
+                scanf(" %c", &value);
+                insert_values(df->columns[i], &value);
+                break;
+            }
+            case FLOAT: {
+                float value;
+                printf("Entrez la valeur pour la colonne %s (%d): ",df->columns[i]->title, i+1);
+                scanf("%f", &value);
+                insert_values(df->columns[i], &value);
+                break;
+            }
+            case DOUBLE: {
+                double value;
+                printf("Entrez la valeur pour la colonne %s (%d): ",df->columns[i]->title, i+1);
+                scanf("%lf", &value);
+                insert_values(df->columns[i], &value);
+                break;
+            }
+            case STRING: {
+                char value[100];
+                printf("Entrez la valeur pour la colonne %s (%d): ",df->columns[i]->title, i+1);
+                scanf("%s", value);
+                insert_values(df->columns[i], value);
+                break;
+            }
+
+
+        }
+        if (df->columns[i]->valid_index == 1) {
+            df->columns[i]->valid_index = -1;
+            update_index(df->columns[i]);
+        }
+        else{
+            df->columns[i]->valid_index = 0;
+        }
+
     }
+
 }
 
 // Fonction pour supprimer une ligne d'un dataframe
@@ -91,9 +144,16 @@ void delete_row_dataframe(CDataframe* df, int row_index) {
 
 // Fonction pour ajouter une colonne à un dataframe
 void add_column_dataframe(CDataframe* df,ENUM_TYPE type, char* title) {
+    if (df->numb_columns >= 100) {
+        df->columns = realloc(df->columns, 2 * df->numb_columns * sizeof(COLUMN*));
+    }
+    if (get_number_rows(df) > 0) {
+        printf("Impossible d'ajouter une colonne à un dataframe deja rempli\n");
+        return;
+    }
     df->numb_columns++;
-    df->columns = realloc(df->columns, df->numb_columns * sizeof(COLUMN*));
-    df->columns[df->numb_columns-1] = create_column(type, title);
+    df->columns[df->numb_columns-1] = create_column(type, strdup(title));
+    printf("%p",df->columns[df->numb_columns-1]);
 }
 
 // Fonction pour supprimer une colonne d'un dataframe
@@ -142,15 +202,7 @@ void set_value_in_dataframe(CDataframe* df, int row, int col, void* new_value) {
                 df->columns[col]->data[row]->uint_value = *((unsigned int*)new_value);
                 break;
             case INT:
-                print_col(df->columns[col]);
-                char str[10];
-                convertCol(df->columns[col],row,str,df->columns[col]->TL);
-                printf("%s",str );
                 df->columns[col]->data[row] = new_value;
-                char str1[10];
-                sprintf(str1,"%d",*((int*)new_value));
-                printf("%s",str1 );
-
                 break;
             case CHAR:
                 df->columns[col]->data[row]->char_value = *((char*)new_value);
@@ -168,6 +220,13 @@ void set_value_in_dataframe(CDataframe* df, int row, int col, void* new_value) {
             case STRUCTURE:
                 df->columns[col]->data[row]->struct_value = new_value;
                 break;
+        }
+        if (df->columns[col]->valid_index == 1) {
+            df->columns[col]->valid_index = -1;
+            update_index(df->columns[col]);
+        }
+        else{
+        df->columns[col]->valid_index = 0;
         }
     }
     else {
@@ -217,11 +276,43 @@ int count_cells_less(CDataframe* df, void* x) {
     }
     return count;
 }
+
+void sort_dataframe(CDataframe* df, int column_pos, int order) {
+    if(column_pos < df->numb_columns) {
+        sort_col(df->columns[column_pos], order);
+    }
+    for (int i = 0; i < df->numb_columns; i++) {
+        if(i == column_pos) {
+            continue;
+        }
+        df->columns[i]->index=df->columns[column_pos]->index;
+        df->columns[i]->valid_index=0;
+    }
+}
+
+void print_dataframe_by_index(CDataframe* df){
+    for(int i = 0; i < df->numb_columns; i++) {
+        printf("(%d) ",i);
+        print_col_by_index(df->columns[i]);
+        afficher_index(df->columns[i]);
+    }}
+
+void delete_dataframe(CDataframe* df){
+    for(int i = 0; i < df->numb_columns; i++) {
+        delete_column(df->columns[i]);
+    }
+    free(df->columns);
+    free(df);
+}
+
 void test_dataframe(){
     printf("Création d'un nouveau dataframe.\n");
     CDataframe* df = create_dataframe();
     while(1) {
-        printf("Choisissez une option:\n 1: Ajouter une ligne\n 2: Supprimer une ligne\n 3: Ajouter une colonne\n 4: Supprimer une colonne\n 5: Renommer une colonne\n 6: Afficher le dataframe\n 7: Modifier une valeur\n 8: Actions de verification des valeurs\n 9: Quitter\n");
+        printf("Choisissez une option:\n 1: Ajouter une ligne\n 2: Supprimer une ligne\n "
+               "3: Ajouter une colonne\n 4: Supprimer une colonne\n 5: Renommer une colonne\n 6: Afficher le dataframe\n "
+               "7: Modifier une valeur\n 8: Actions de verification des valeurs\n 9:Trier le dataframe\n "
+               "10:Afficher le dataframe par index\n 11: Supprimer le dataframe\n 11: Quitter\n");
         int option;
         scanf("%d", &option);
         switch(option) {
@@ -230,16 +321,8 @@ void test_dataframe(){
                     printf("Impossible d'ajouter une ligne à un dataframe sans colonne\n");
                     break;
                 }
-                printf("Entrez le nombre de valeurs dans la ligne:\n");
-                int num_values;
-                scanf("%d", &num_values);
-                int* row_values = malloc(num_values * sizeof(int));
-                for(int i = 0; i < num_values; i++) {
-                    printf("Entrez la valeur %d:\n", i+1);
-                    scanf("%d", &row_values[i]);
-                }
-                add_row_dataframe(df, row_values);
-                free(row_values);
+                add_row_dataframe(df);
+
                 break;
             }
             case 2: {
@@ -254,7 +337,7 @@ void test_dataframe(){
                 break;
             }
             case 3: {
-                printf("Entrez le type de la colonne à ajouter:\n");
+                printf("Choisissez le type de colonne à ajouter\n 1: NULLVAL\n 2: UINT\n 3: INT\n 4: CHAR\n 5: FLOAT\n 6: DOUBLE\n 7: STRING\n 8: STRUCTURE\n\n");
                 ENUM_TYPE type;
                 scanf("%d", &type);
                 printf("Entrez le titre de la colonne à ajouter:\n");
@@ -289,7 +372,12 @@ void test_dataframe(){
             case 7: {
                 printf("Quelle est la position de la donnée à modifier?\n");
                 int row, col;
-                scanf("%d %d", &row, &col);
+                scanf("%d %d", &col, &row);
+                printf("Position: %d %d\n", col, row);
+                if(col >= df->numb_columns || row >= df->columns[col]->TL) {
+                    printf("Position invalide\n");
+                    break;
+                }
                 printf("Entrez la nouvelle valeur:\n");
                 switch (df->columns[col]->column_type) {
                     case UINT: {
@@ -335,6 +423,7 @@ void test_dataframe(){
 
                 }
             }
+                break;
             case 8:{
                 printf("Choisissez une option:\n 1: Compter le nombre de cellules égales à une valeur\n 2: Compter le nombre de cellules supérieures à une valeur\n 3: Compter le nombre de cellules inférieures à une valeur\n 4: Quitter\n");
                 int option;
@@ -371,8 +460,26 @@ void test_dataframe(){
                     }
                 }
             }
-
-            case 9: {
+            case 9:{
+                printf("Entrez l'indice de la colonne à trier:\n");
+                int column_index;
+                scanf("%d", &column_index);
+                printf("Entrez l'ordre de tri (1 pour ASC, 0 pour DESC):\n");
+                int order;
+                scanf("%d", &order);
+                sort_dataframe(df, column_index, order);
+                break;
+            }
+            case 10:{
+                print_dataframe_by_index(df);
+                break;
+            }
+            case 11:{
+                delete_dataframe(df);
+                printf("Dataframe supprimé\n");
+                return;
+            }
+            case 12: {
                 printf("Au revoir!\n");
                 return;
             }

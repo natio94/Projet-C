@@ -23,7 +23,7 @@ void swap(unsigned long long int* a, unsigned long long int* b) {
 
 int partition(COLUMN* col, int low, int high) {
     unsigned long long int* index = col->index;
-    void* pivot = col->data[index[high]];
+    void* pivot = col->data[index[high]]; // Use the data at the index position for the pivot
     int i = (low - 1);
 
     for (int j = low; j <= high - 1; j++) {
@@ -59,7 +59,7 @@ int partition(COLUMN* col, int low, int high) {
                 }
                 break;
             case STRING:
-                if ((char*)col->data[index[j]]< (char*)pivot) {
+                if (strcmp((char*)col->data[index[j]], (char*)pivot) < 0) {
                     i++;
                     swap(&index[i], &index[j]);
                 }
@@ -79,26 +79,121 @@ void quicksort(COLUMN* col, int low, int high) {
     }
 }
 
+void insertion_sort(COLUMN* col,int sort_dir){
+    if(sort_dir==ASC) {
+        for (int i = 1; i < col->TL; i++) {
+            unsigned long long int key = col->index[i];
+            int j = i - 1;
+            while (j >= 0 && col->data[col->index[j]] > col->data[key]) {
+                col->index[j + 1] = col->index[j];
+                j = j - 1;
+            }
+            col->index[j + 1] = key;
+        }
+    }
+    else{
+        for (int i = 1; i < col->TL; i++) {
+            unsigned long long int key = col->index[i];
+            int j = i - 1;
+            while (j >= 0 && col->data[col->index[j]] < col->data[key]) {
+                col->index[j + 1] = col->index[j];
+                j = j - 1;
+            }
+            col->index[j + 1] = key;
+        }
+    }
+}
 
-void sort_col(COLUMN *col,int sort_dir){
-    if (col->TL==0 || col->valid_index==1){
+int partition_desc(COLUMN* col, int low, int high) {
+    unsigned long long int* index = col->index;
+    void* pivot = col->data[index[high]];
+    int i = (low - 1);
+
+    for (int j = low; j <= high - 1; j++) {
+        switch (col->column_type) {
+            case UINT:
+                if (*(unsigned int*)col->data[index[j]] > *(unsigned int*)pivot) {
+                    i++;
+                    swap(&index[i], &index[j]);
+                }
+                break;
+            case INT:
+                if (*(int*)col->data[index[j]] > *(int*)pivot) {
+                    i++;
+                    swap(&index[i], &index[j]);
+                }
+                break;
+            case CHAR:
+                if (*(char*)col->data[index[j]] > *(char*)pivot) {
+                    i++;
+                    swap(&index[i], &index[j]);
+                }
+                break;
+            case FLOAT:
+                if (*(float*)col->data[index[j]] > *(float*)pivot) {
+                    i++;
+                    swap(&index[i], &index[j]);
+                }
+                break;
+            case DOUBLE:
+                if (*(double*)col->data[index[j]] > *(double*)pivot) {
+                    i++;
+                    swap(&index[i], &index[j]);
+                }
+                break;
+            case STRING:
+                if(strcmp((char*)col->data[index[j]], (char*)pivot) > 0) {
+                    i++;
+                    swap(&index[i], &index[j]);
+                }
+                break;
+                // Add other cases for different column types
+        }
+    }
+    swap(&index[i + 1], &index[high]);
+    return (i + 1);
+}
+
+void quicksort_desc(COLUMN* col, int low, int high) {
+    if (low < high) {
+        int pi = partition_desc(col, low, high);
+        quicksort_desc(col, low, pi - 1);
+        quicksort_desc(col, pi + 1, high);
+    }
+}
+void sort_col(COLUMN *col,int sort_dir) {
+    if (col->sort_dir!=sort_dir){
+        col->valid_index=0;
+    }
+    else if (col->TL == 0 || col->valid_index == 1) {
         printf("Sort function exited early: TL=%d, valid_index=%d\n", col->TL, col->valid_index);
         return;
     }
-    else if (col->valid_index==0) {
-        // Initialize index array
-        for(unsigned long long int i = 0; i < col->TL; i++) {
-            col->index[i] = i;
+    if (sort_dir == ASC) {
+         if (col->valid_index == 0) {
+            // Initialize index array
+            for (unsigned long long int i = 0; i < col->TL; i++) {
+                col->index[i] = i;
+            }
+
+            quicksort(col, 0, col->TL - 1);
+        } else if (col->valid_index == -1) {
+            quicksort(col, 0, col->TL - 1);
         }
+    } else {
+        if (col->valid_index == 0) {
+            // Initialize index array
+            for (unsigned long long int i = 0; i < col->TL; i++) {
+                col->index[i] = i;
+            }
 
-        quicksort(col, 0, col->TL-1);
+            quicksort_desc(col, 0, col->TL - 1);
+        }
+        quicksort_desc(col, 0, col->TL - 1);
     }
-    else if (col->valid_index==-1){
-        quicksort(col, 0, col->TL-1);
-    }
-    col->valid_index=1;
+    col->valid_index = 1;
+    col->sort_dir = sort_dir;
 }
-
 // Insère des valeurs dans une colonne
 int insert_values(COLUMN* col, void* value){
     void* newValue;
@@ -276,7 +371,7 @@ void convertCol(COLUMN* col, unsigned long long int i, char *str,unsigned int si
 // Affiche une colonne
 void print_col(COLUMN* col){
     if (col->data==NULL || col->TL==0){
-        printf("La colonne est vide\n");
+        printf("La colonne %s est vide\n",col->title);
         return;
     }
     printf("Colonne %s\n",col->title);

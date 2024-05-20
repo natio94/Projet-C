@@ -92,7 +92,7 @@ int main(){
     printf("Column deleted\n");
 
 
-*/
+*//*
         // Create a dataframe
         CDataframe* df = create_dataframe();
     printf("Created dataframe\n");
@@ -150,7 +150,7 @@ int main(){
     printf("Number of columns after deletion: %d\n", get_number_columns(df));
     print_dataframe(df);
     printf("All operations completed!\n");
-
+*/
         return 0;
     }
 

@@ -21,11 +21,7 @@ CDataframe* create_dataframe();
  */
 void fill_dataframe(CDataframe* df);
 
-/**
- * Remplit un dataframe avec des données déjà définie.
- * @param df Le dataframe à remplir.
- */
-void fill_dataframe_hardcoded(CDataframe* df);
+
 
 // Affichage
 /**
@@ -54,7 +50,7 @@ void print_dataframe_column(CDataframe* df, int column);
  * @param df Le dataframe.
  * @param row_values Les valeurs de la ligne à ajouter.
  */
-void add_row_dataframe(CDataframe* df, int* row_values);
+void add_row_dataframe(CDataframe* df);
 
 /**
  * Supprime une ligne d'un dataframe.
@@ -150,6 +146,26 @@ int count_cells_greater(CDataframe* df, void* x);
  * @return Le nombre de valeurs inférieures à x.
  */
 int count_cells_less(CDataframe* df, void* x);
+
+/**
+ * Trie un dataframe en fonction d'une colonne.
+ * @param df Le dataframe.
+ * @param column_index L'indice de la colonne à trier.
+ * @param order 1 pour un tri croissant, -1 pour un tri décroissant.
+ */
+void sort_dataframe(CDataframe* df, int column_index, int order);
+
+/**
+ * Supprime le dataframe donné en parametre
+ * @param df Le dataframe à supprimer
+ */
+void delete_dataframe(CDataframe* df);
+
+/**
+ * Affiche le dataframe par index
+ * @param df
+ */
+void print_dataframe_by_index(CDataframe* df);
 
 /**
  * Permet d'afficher un menu dans la console pour tester les différentes actions que l'on peut faire sur un dataframe.
