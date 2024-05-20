@@ -125,17 +125,47 @@ int nbEqualVal(COLUMN *col, int x);
 */
 void sort_col(COLUMN *col,int sort_dir);
 
+/**
+ * Affiche une colonne par index.
+ * @param col La colonne.
+ */
 void print_col_by_index(COLUMN* col);
 
+/**
+ * Mets à jour l'index de la colonne.
+ * @param col La colonne.
+ */
 void update_index(COLUMN* col);
 
+/**
+ * Vérifie si une colonne est indexée.
+ * @param col La colonne.
+ * @return 1 si la colonne est indexée, 0 sinon.
+ */
 int check_index(COLUMN* col);
 
+/**
+ * Supprime l'index d'une colonne.
+ * @param col La colonne.
+ */
 void erase_index(COLUMN* col);
 
+/**
+ * Recherche une valeur dans une colonne.
+ * @param col La colonne.
+ * @param value La valeur à rechercher.
+ * @return 1 si la valeur est trouvée, 0 sinon.
+ */
 int search_value_in_column(COLUMN* col, void* value);
 
+/**
+ * Affiche l'index d'une colonne.
+ * @param col La colonne.
+ */
 void afficher_index(COLUMN* col);
 
+/**
+ * Permet d'afficher un menu dans la console pour tester les différentes actions que l'on peut faire sur une colonne.
+ */
 void test_column();
 #endif //PROJET_C_COLUMN_H

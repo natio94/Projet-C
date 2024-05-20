@@ -68,6 +68,10 @@ void print_dataframe_column(CDataframe* df, int column) {
 
 // Fonction pour ajouter une ligne à un dataframe
 void add_row_dataframe(CDataframe* df, int* row_values) {
+    if(df->numb_columns == 0) {
+        printf("Impossible d'ajouter une ligne à un dataframe sans colonne\n");
+        return;
+    }
     for(int i = 0; i < df->numb_columns; i++) {
         insert_values(df->columns[i],  &row_values[i]);
     }
@@ -166,6 +170,9 @@ void set_value_in_dataframe(CDataframe* df, int row, int col, void* new_value) {
                 break;
         }
     }
+    else {
+        printf("Colonne et/ou ligne incorrecte/s\n");
+    }
 }
 
 // Fonction pour obtenir le nombre de lignes dans un dataframe
@@ -211,5 +218,168 @@ int count_cells_less(CDataframe* df, void* x) {
     return count;
 }
 void test_dataframe(){
+    printf("Création d'un nouveau dataframe.\n");
+    CDataframe* df = create_dataframe();
+    while(1) {
+        printf("Choisissez une option:\n 1: Ajouter une ligne\n 2: Supprimer une ligne\n 3: Ajouter une colonne\n 4: Supprimer une colonne\n 5: Renommer une colonne\n 6: Afficher le dataframe\n 7: Modifier une valeur\n 8: Actions de verification des valeurs\n 9: Quitter\n");
+        int option;
+        scanf("%d", &option);
+        switch(option) {
+            case 1: {
+                if(df->numb_columns == 0) {
+                    printf("Impossible d'ajouter une ligne à un dataframe sans colonne\n");
+                    break;
+                }
+                printf("Entrez le nombre de valeurs dans la ligne:\n");
+                int num_values;
+                scanf("%d", &num_values);
+                int* row_values = malloc(num_values * sizeof(int));
+                for(int i = 0; i < num_values; i++) {
+                    printf("Entrez la valeur %d:\n", i+1);
+                    scanf("%d", &row_values[i]);
+                }
+                add_row_dataframe(df, row_values);
+                free(row_values);
+                break;
+            }
+            case 2: {
+                if(get_number_rows(df) == 0) {
+                    printf("Impossible de supprimer une ligne dans un dataframe qui n'en as pas\n");
+                    break;
+                }
+                printf("Entrez l'indice de la ligne à supprimer:\n");
+                int row_index;
+                scanf("%d", &row_index);
+                delete_row_dataframe(df, row_index);
+                break;
+            }
+            case 3: {
+                printf("Entrez le type de la colonne à ajouter:\n");
+                ENUM_TYPE type;
+                scanf("%d", &type);
+                printf("Entrez le titre de la colonne à ajouter:\n");
+                char title[100];
+                scanf("%s", title);
+                add_column_dataframe(df, type, title);
+                break;
+            }
+            case 4: {
+                printf("Entrez l'indice de la colonne à supprimer:\n");
+                int column_index;
+                scanf("%d", &column_index);
+                delete_column_dataframe(df, column_index);
+                break;
+            }
+            case 5: {
+                printf("Entrez l'indice de la colonne à renommer:\n");
+                int column_index;
+                scanf("%d", &column_index);
+                printf("Entrez le nouveau titre de la colonne:\n");
+                char new_title[100];
+                scanf("%s", new_title);
+                rename_column_dataframe(df, column_index, new_title);
+                break;
+            }
+            case 6: {
+                printf("Affichage du dataframe:\n");
+                print_dataframe(df);
+                break;
+            }
 
+            case 7: {
+                printf("Quelle est la position de la donnée à modifier?\n");
+                int row, col;
+                scanf("%d %d", &row, &col);
+                printf("Entrez la nouvelle valeur:\n");
+                switch (df->columns[col]->column_type) {
+                    case UINT: {
+                        unsigned int new_value;
+                        scanf("%u", &new_value);
+                        set_value_in_dataframe(df, row, col, &new_value);
+                        break;
+                    }
+                    case INT: {
+                        int new_value;
+                        scanf("%d", &new_value);
+                        set_value_in_dataframe(df, row, col, &new_value);
+                        break;
+                    }
+                    case CHAR: {
+                        char new_value;
+                        scanf("%c", &new_value);
+                        set_value_in_dataframe(df, row, col, &new_value);
+                        break;
+                    }
+                    case FLOAT: {
+                        float new_value;
+                        scanf("%f", &new_value);
+                        set_value_in_dataframe(df, row, col, &new_value);
+                        break;
+                    }
+                    case DOUBLE: {
+                        double new_value;
+                        scanf("%lf", &new_value);
+                        set_value_in_dataframe(df, row, col, &new_value);
+                        break;
+                    }
+                    case STRING: {
+                        char new_value[100];
+                        scanf("%s", new_value);
+                        set_value_in_dataframe(df, row, col, new_value);
+                        break;
+                    }
+                    case STRUCTURE: {
+                        printf("Impossible de modifier une colonne de type STRUCTURE\n");
+                        break;
+                    }
+
+                }
+            }
+            case 8:{
+                printf("Choisissez une option:\n 1: Compter le nombre de cellules égales à une valeur\n 2: Compter le nombre de cellules supérieures à une valeur\n 3: Compter le nombre de cellules inférieures à une valeur\n 4: Quitter\n");
+                int option;
+                scanf("%d", &option);
+                switch(option) {
+                    case 1: {
+                        printf("Entrez la valeur à rechercher:\n");
+                        int value;
+                        scanf("%d", &value);
+                        printf("Nombre de cellules égales à %d: %d\n", value, count_cells_equal(df, &value));
+                        break;
+                    }
+                    case 2: {
+                        printf("Entrez la valeur à comparer:\n");
+                        int value;
+                        scanf("%d", &value);
+                        printf("Nombre de cellules supérieures à %d: %d\n", value, count_cells_greater(df, &value));
+                        break;
+                    }
+                    case 3: {
+                        printf("Entrez la valeur à comparer:\n");
+                        int value;
+                        scanf("%d", &value);
+                        printf("Nombre de cellules inférieures à %d: %d\n", value, count_cells_less(df, &value));
+                        break;
+                    }
+                    case 4:{
+                        printf("Retour au menu des dataframes\n");
+                        break;
+                    }
+                    default: {
+                        printf("Option non reconnue. Veuillez réessayer.\n");
+                        break;
+                    }
+                }
+            }
+
+            case 9: {
+                printf("Au revoir!\n");
+                return;
+            }
+            default: {
+                printf("Option non reconnue. Veuillez réessayer.\n");
+                break;
+            }
+        }
+    }
 }

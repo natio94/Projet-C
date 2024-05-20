@@ -151,5 +151,8 @@ int count_cells_greater(CDataframe* df, void* x);
  */
 int count_cells_less(CDataframe* df, void* x);
 
+/**
+ * Permet d'afficher un menu dans la console pour tester les différentes actions que l'on peut faire sur un dataframe.
+ */
 void test_dataframe();
 #endif //PROJET_C_CDATAFRAME_H
