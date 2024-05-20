@@ -671,7 +671,7 @@ int search_value_in_column(COLUMN* col, void* value){
         printf("\n");
     }
 void test_column(){
-    printf("Choisissez le type de colonne à tester\n 1: NULLVAL\n 2: UINT\n 3: INT\n 4: CHAR\n 5: FLOAT\n 6: DOUBLE\n 7: STRING\n 8: STRUCTURE\n");
+    printf("Choisissez le type de colonne à tester\n 1: UINT\n 2: INT\n 3: CHAR\n 4: FLOAT\n 5: DOUBLE\n 6: STRING\n ");
     ENUM_TYPE type;
     scanf("%d",&type);
     printf("Vous avez choisi le type %d\n",type);

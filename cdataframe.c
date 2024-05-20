@@ -337,13 +337,13 @@ void test_dataframe(){
                 break;
             }
             case 3: {
-                printf("Choisissez le type de colonne à ajouter\n 1: NULLVAL\n 2: UINT\n 3: INT\n 4: CHAR\n 5: FLOAT\n 6: DOUBLE\n 7: STRING\n 8: STRUCTURE\n\n");
+                printf("Choisissez le type de colonne à ajouter\n 1: UINT\n 2: INT\n 3: CHAR\n 4: FLOAT\n 5: DOUBLE\n 6: STRING\n");
                 ENUM_TYPE type;
                 scanf("%d", &type);
                 printf("Entrez le titre de la colonne à ajouter:\n");
                 char title[100];
                 scanf("%s", title);
-                add_column_dataframe(df, type, title);
+                add_column_dataframe(df, type+1, title);
                 break;
             }
             case 4: {
