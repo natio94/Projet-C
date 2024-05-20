@@ -150,4 +150,6 @@ int count_cells_greater(CDataframe* df, void* x);
  * @return Le nombre de valeurs inférieures à x.
  */
 int count_cells_less(CDataframe* df, void* x);
+
+void test_dataframe();
 #endif //PROJET_C_CDATAFRAME_H

@@ -11,6 +11,7 @@ COLUMN *create_column(ENUM_TYPE type, char* title) {
     new_column->TP=0;
     new_column->column_type = type;
     new_column->index = NULL;
+    new_column->valid_index=0;
     return new_column;
 }
 
@@ -81,6 +82,7 @@ void quicksort(COLUMN* col, int low, int high) {
 
 void sort_col(COLUMN *col,int sort_dir){
     if (col->TL==0 || col->valid_index==1){
+        printf("Sort function exited early: TL=%d, valid_index=%d\n", col->TL, col->valid_index);
         return;
     }
     else if (col->valid_index==0) {
@@ -88,15 +90,18 @@ void sort_col(COLUMN *col,int sort_dir){
         for(unsigned long long int i = 0; i < col->TL; i++) {
             col->index[i] = i;
         }
+
         quicksort(col, 0, col->TL-1);
     }
     else if (col->valid_index==-1){
         quicksort(col, 0, col->TL-1);
     }
+    col->valid_index=1;
 }
 
 // Insère des valeurs dans une colonne
 int insert_values(COLUMN* col, void* value){
+    void* newValue;
     if (value==NULL){
         if (col->data==NULL){
             col->data= malloc(REALOC_SIZE*sizeof(NULL));
@@ -111,6 +116,7 @@ int insert_values(COLUMN* col, void* value){
         }
     }
     else {
+
         switch (col->column_type) {
             case UINT:
                 if (col->data == NULL) {
@@ -123,8 +129,11 @@ int insert_values(COLUMN* col, void* value){
                     }
                     col->TP += REALOC_SIZE;
                 }
+                newValue = malloc(sizeof(unsigned int));
+                *(unsigned int*)newValue = *(unsigned int*)value;
                 break;
             case INT:
+
                 if (col->data == NULL) {
                     col->data = malloc(REALOC_SIZE * sizeof(int));
                     col->TP = REALOC_SIZE;
@@ -133,8 +142,11 @@ int insert_values(COLUMN* col, void* value){
                     if (col->data==NULL){
                         return 0;
                     }
-                    col->TP += REALOC_SIZE;
+
                 }
+                newValue = malloc(sizeof(int));
+                *((int*)newValue) = *((int*)value);
+                col->TP += REALOC_SIZE;
                 break;
             case CHAR:
                 if (col->data == NULL) {
@@ -147,6 +159,8 @@ int insert_values(COLUMN* col, void* value){
                     }
                     col->TP += REALOC_SIZE;
                 }
+                newValue = malloc(sizeof(char));
+                *(char*)newValue = *(char*)value;
                 break;
             case FLOAT:
                 if (col->data == NULL) {
@@ -159,6 +173,8 @@ int insert_values(COLUMN* col, void* value){
                     }
                     col->TP += REALOC_SIZE;
                 }
+                newValue = malloc(sizeof(float));
+                *(float*)newValue = *(float*)value;
                 break;
             case DOUBLE:
                 if (col->data == NULL) {
@@ -171,6 +187,8 @@ int insert_values(COLUMN* col, void* value){
                     }
                     col->TP += REALOC_SIZE;
                 }
+                newValue = malloc(sizeof(double));
+                *(double*)newValue = *(double*)value;
                 break;
             case STRING:
                 if (col->data == NULL) {
@@ -183,22 +201,29 @@ int insert_values(COLUMN* col, void* value){
                     }
                     col->TP += REALOC_SIZE;
                 }
+                newValue = malloc(strlen(value) + 1);
+                strcpy(newValue, value);
                 break;
             case STRUCTURE:
                 return 0;
                 break;
             case NULLVAL:
+                return 0;
                 break;
         }
     }
-    col->data[col->TL]=value;
+    col->data[col->TL]=newValue;
     col->TL++;
     col->index = realloc(col->index, col->TL * sizeof(unsigned long long int));
     col->index[col->TL-1] = col->TL-1;
+    if (col->valid_index==1){
+        col->valid_index=-1;
+        sort_col(col,col->sort_dir);
+    }
     if (col->data==NULL || col->data[col->TL]!=value){
         return 0;
     }
-    update_index(col);
+
     return 1;
 }
 // Supprime une colonne
@@ -322,17 +347,48 @@ void* valPosX(COLUMN *col, int x) {
     if (x<col->TL){
         return (void*) col->data[x];
     }
-    return (void*)-1;
+    return NULL;
 }
 // Vérifie si une valeur est présente dans une colonne
 int valInCol(COLUMN *col, void* x) {
     for(int i=0;i<col->TL;i++){
-        if (col->data[i]==x){
-            return 1;
+        switch (col->column_type) {
+            case UINT:
+                if (*(unsigned int*)col->data[i] == *(unsigned int*)x){
+                    return 1;
+                }
+                break;
+            case INT:
+                if (*(int*)col->data[i] == *(int*)x){
+                    return 1;
+                }
+                break;
+            case CHAR:
+                if (*(char*)col->data[i] == *(char*)x){
+                    return 1;
+                }
+                break;
+            case FLOAT:
+                if (*(float*)col->data[i] == *(float*)x){
+                    return 1;
+                }
+                break;
+            case DOUBLE:
+                if (*(double*)col->data[i] == *(double*)x){
+                    return 1;
+                }
+                break;
+            case STRING:
+                if (strcmp((char*)col->data[i], (char*)x) == 0){
+                    return 1;
+                }
+                break;
+                // Add other cases for different column types
         }
     }
     return 0;
 }
+
 // Compte le nombre de valeurs supérieures à x dans une colonne
 int nbSupVal(COLUMN *col, void* x) {
     int nb = 0;
@@ -415,10 +471,11 @@ int nbInfVal(COLUMN *col, void* x) {
 }
 
 void erase_index(COLUMN* col){
+    if (col->index!=NULL){
     free(col->index);
     col->index=NULL;
     col->valid_index=0;
-}
+}}
 
 int check_index(COLUMN* col){
     if (col->index==NULL){
@@ -435,4 +492,187 @@ int check_index(COLUMN* col){
 
 void update_index(COLUMN* col){
     sort_col(col,col->sort_dir);
+}
+
+int search_value_in_column(COLUMN* col, void* value){
+    if (col->data==NULL){
+        return 0;
+    }
+    if (col->valid_index==0 || col->valid_index==-1){
+        return -1;
+    }
+    int low = 0;
+    int high = col->TL - 1;
+    while (low <= high) {
+        int mid = low + (high - low) / 2;
+        switch (col->column_type) {
+            case UINT:
+                if (*(unsigned int*)col->data[mid] == *(unsigned int*)value){
+                    return 1;
+                }
+                if (*(unsigned int*)col->data[mid] < *(unsigned int*)value){
+                    low = mid + 1;
+                } else {
+                    high = mid - 1;
+                }
+                break;
+            case INT:
+                if (*(int*)col->data[mid] == *(int*)value){
+                    return 1;
+                }
+                if (*(int*)col->data[mid] < *(int*)value){
+                    low = mid + 1;
+                } else {
+                    high = mid - 1;
+                }
+                break;
+            case CHAR:
+                if (*(char*)col->data[mid] == *(char*)value){
+                    return 1;
+                }
+                if (*(char*)col->data[mid] < *(char*)value){
+                    low = mid + 1;
+                } else {
+                    high = mid - 1;
+                }
+                break;
+            case FLOAT:
+                if (*(float*)col->data[mid] == *(float*)value){
+                    return 1;
+                }
+                if (*(float*)col->data[mid] < *(float*)value){
+                    low = mid + 1;
+                } else {
+                    high = mid - 1;
+                }
+                break;
+            case DOUBLE:
+                if (*(double*)col->data[mid] == *(double*)value){
+                    return 1;
+                }
+                if (*(double*)col->data[mid] < *(double*)value){
+                    low = mid + 1;
+                } else {
+                    high = mid - 1;
+                }
+                break;
+            case STRING:
+                if (strcmp((char*)col->data[mid], (char*)value) == 0){
+                    return 1;
+                }
+                if (strcmp((char*)col->data[mid], (char*)value) < 0){
+                    low = mid + 1;
+                } else {
+                    high = mid - 1;
+                }
+                break;
+                // Add other cases for different column types
+        }
+    }}
+    void afficher_index(COLUMN* col){
+        for (int i=0;i<col->TL;i++){
+            printf("%d ",col->index[i]);
+        }
+        printf("\n");
+    }
+void test_column(){
+    printf("Choisissez le type de colonne à tester\n 1: NULLVAL\n 2: UINT\n 3: INT\n 4: CHAR\n 5: FLOAT\n 6: DOUBLE\n 7: STRING\n 8: STRUCTURE\n");
+    ENUM_TYPE type;
+    scanf("%d",&type);
+    printf("Vous avez choisi le type %d\n",type);
+    printf("Choisissez le titre de la colonne à tester\n");
+    char title[100];
+    scanf("%s",title);
+    COLUMN *col=create_column(type,title);
+    printf("Choisissez le nombre de valeurs à insérer\n");
+    int nb;
+    scanf("%d",&nb);
+    for (int i=0;i<nb;i++){
+        printf("Choisissez la valeur à insérer\n");
+        int value;
+        scanf("%d",&value);
+        insert_values(col,(void*)&value);
+    }
+    printf("Affichage de la colonne\n");
+    print_col_by_index(col);
+
+    while(1) {
+        printf("Choisissez une option:\n 1: Voir le nombre de fois qu'une valeur est dans la colonne\n 2: Voir la valeur à une position\n 3: Vérifier si une valeur est dans la colonne\n 4: Voir le nombre de valeurs supérieures/inférieures à une valeur\n 5: Trier la colonne\n 6: Quitter\n");
+        int option;
+        scanf("%d", &option);
+        switch(option) {
+            case 1: {
+                printf("Entrez la valeur à chercher:\n");
+                int value;
+                scanf("%d", &value);
+                printf("La valeur %d apparaît %d fois dans la colonne.\n", value, nbVal(col, &value));
+                break;
+            }
+            case 2: {
+                printf("Entrez la position à chercher:\n");
+                int pos;
+                scanf("%d", &pos);
+                void* value = valPosX(col, pos);
+                if (value == NULL) {
+                    printf("Position invalide.\n");
+                } else {
+                    switch (col->column_type) {
+                        case UINT:
+                            printf("La valeur à la position %d est %d.\n", pos, *(unsigned int*)value);
+                            break;
+                        case INT:
+                            printf("La valeur à la position %d est %d.\n", pos, *(int*)value);
+                            break;
+                        case CHAR:
+                            printf("La valeur à la position %d est %c.\n", pos, *(char*)value);
+                            break;
+                        case FLOAT:
+                            printf("La valeur à la position %d est %f.\n", pos, *(float*)value);
+                            break;
+                        case DOUBLE:
+                            printf("La valeur à la position %d est %lf.\n", pos, *(double*)value);
+                            break;
+                        case STRING:
+                            printf("La valeur à la position %d est %s.\n", pos, (char*)value);
+                            break;
+                    }
+                }
+            }
+                break;
+            case 3: {
+                printf("Entrez la valeur à vérifier:\n");
+                int value;
+                scanf("%d", &value);
+                if (valInCol(col, &value)) {
+                    printf("La valeur %d est dans la colonne.\n", value);
+                } else {
+                    printf("La valeur %d n'est pas dans la colonne.\n", value);
+                }
+
+                break;
+            }
+            case 4: {
+                printf("Entrez la valeur de référence:\n");
+                int value;
+                scanf("%d", &value);
+                printf("Il y a %d valeurs supérieures et %d valeurs inférieures à %d dans la colonne.\n", nbSupVal(col, &value), nbInfVal(col, &value), value);
+                break;
+            }
+            case 5: {
+                printf("Trier la colonne.\n");
+                afficher_index(col);
+                sort_col(col, ASC);
+                print_col_by_index(col);
+                break;
+            }
+            case 6: {
+                printf("Au revoir!\n");
+                return;
+            }
+            default: {
+                printf("Option non reconnue. Veuillez réessayer.\n");
+                break;
+            }
+        }
+    }
 }

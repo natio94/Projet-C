@@ -8,7 +8,20 @@ void handleSegFaultError(int sig) {
     exit(1);
 }
 int main(){
-//j
+    printf("Voulez-vous tester : \n1. Les colonnes\n2. Les dataframes\n");
+    int choice;
+    scanf("%d",&choice);
+    switch (choice){
+        case 1:
+            test_column();
+            break;
+        case 2:
+            test_dataframe();
+            break;
+        default:
+            printf("Choix invalide\n");
+            break;
+    }
     signal(SIGSEGV, handleSegFaultError);
 /*
     COLUMN test=*create_column(STRING,"test");
@@ -22,7 +35,7 @@ int main(){
     print_col(&test);
     printf("Taille de la colonne : %d\n",test.TL);
     delete_column(&test);
-    print_col(&test);
+    print_col(&test);*//*
     COLUMN *col = create_column(INT, "Test Column");
     int value = 5;
     int non_existing_value = 6;
@@ -45,16 +58,16 @@ int main(){
     printf("valPosX with invalid position: %p\n", valPosX(col, 1));
 
     insert_values(col, &value2);
-    printf("nbSupVal with values: %d\n", nbSupVal(col, value1));
+    //printf("nbSupVal with values: %d\n", nbSupVal(col, value1));
 
-    printf("nbInfVal with values: %d\n", nbInfVal(col, value2));
+    //printf("nbInfVal with values: %d\n", nbInfVal(col, value2));
 
     insert_values(col, &value1);
-    printf("nbEqualVal with values: %d\n", nbEqualVal(col, value1));
+
     print_col(col);
     delete_column(col);
     print_col(col);
-
+/*
         // Create a column of type STRING
     COLUMN *col2 = create_column(STRING, "Test 2");
     printf("Created column: %s\n", col2->title);
@@ -127,6 +140,7 @@ int main(){
     for(int i=0;i<df->columns[0]->TL;i++){
         printf("%llu\n",df->columns[0]->index[i]);
     }
+    printf("afeizfj%defezg\n", search_value_in_column(df->columns[0],&values2));
     // Delete a row
     delete_row_dataframe(df, 0);
     printf("Number of rows after deletion: %d\n", get_number_rows(df));

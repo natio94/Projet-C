@@ -132,4 +132,10 @@ void update_index(COLUMN* col);
 int check_index(COLUMN* col);
 
 void erase_index(COLUMN* col);
+
+int search_value_in_column(COLUMN* col, void* value);
+
+void afficher_index(COLUMN* col);
+
+void test_column();
 #endif //PROJET_C_COLUMN_H
